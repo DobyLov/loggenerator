@@ -2,14 +2,14 @@
 # es_handler
 # Test avec ES 7.5
 
-from log_generator.es_constants import index_template_settings, index_template_name, index_mapping, index_name_pyloggen
+from log_generator.es_constants import index_template_name, index_mapping, index_name_pyloggen
+from log_generator.es_constants import index_template_settings_1, index_template_settings_2, index_template_settings_3, index_template_settings_4
 from log_generator.es_constants import pipeline_user_agent, user_agent_pipeline_name
 #from elasticsearch import Elasticsearch, exceptions 
 import elasticsearch
 from datetime import datetime
 import requests
 import json
-
 
 # Vérifier si le serveur repond
 def es_getSrvResponse(ip:str):
@@ -60,9 +60,6 @@ def es_waitSrvReady(ip:str):
 
 # Recuperer le nombre de noeud du cluster
 def es_getNodeNumber(ip:str):
-
-    global es_cluster_nodeNumber
-    es_cluster_nodeNumber = 1  
     
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
@@ -73,36 +70,36 @@ def es_getNodeNumber(ip:str):
         print("es_api: Cluster_Number_of_nodes : impossible de determiner le nombre de noeud")
         exitProgram()
 
-# Définir le nombre de shard / replica selon le nombre de noeuds
-# 1 noeud => 1 shard 0 replicas
-# 2 noeuds => 1 shard 1 replicat
-# 3 noeuds => 2 shards 1 replicat
-# 4 et plus => 2 shards 2 repicas
-def es_setShardReplicaNumber():
+    return es_cluster_nodeNumber
 
-    global shardNumber, replicaNumber
-    shardNumber = 0 
-    replicaNumber = 0
-    if es_cluster_nodeNumber == 1:
+# Définir le nombre de shard / replica selon le nombre de noeuds
+def es_setShardReplicaNumber(ip:str):
+    nodeNumber = es_getNodeNumber(ip)
+
+    if nodeNumber == 1:
         shardNumber = 1
         replicaNumber = 0
-    elif es_cluster_nodeNumber == 2:
+        template = index_template_settings_1
+    elif nodeNumber == 2:
         shardNumber = 1
         replicaNumber = 1
-    elif es_cluster_nodeNumber == 3:
+        template = index_template_settings_2
+    elif nodeNumber == 3:
         shardNumber = 2
-        replicaNumber = 1
-    elif es_cluster_nodeNumber > 3:
+        replicaNumber = 2
+        template = index_template_settings_3
+    elif nodeNumber > 3:
         shardNumber = 3
         replicaNumber = 2
+        template = index_template_settings_4
 
-    print("es_api: " + str(es_cluster_nodeNumber) + "_noeud(s) detecte => templateConf: " + str(shardNumber) + "_shard(s) & " + str(replicaNumber) + "_replica(s)" )
+    print("es_api: " + str(nodeNumber) + "_noeud(s) detecte => templateConf: " + str(shardNumber) + "_shard(s) & " + str(replicaNumber) + "_replica(s)" )
 
-
+    return template
 
 # Verifier que le Pipeline existe
 def es_check_existing_pipeline(ip:str):
-
+    
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         es.ingest.get_pipeline(user_agent_pipeline_name)
@@ -140,6 +137,7 @@ def es_check_existing_template(ip:str):
 
 # Creation de template
 def es_create_new_template(ip:str):
+    index_template_settings = es_setShardReplicaNumber(ip)
 
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
@@ -160,8 +158,6 @@ def es_check_existing_index(ip:str):
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         index_name: str = index_name_pyloggen + get_gen_date_index()
-        #if not es.indices.exists(index_name):
-            #es_create_new_index(ip, index_name)
         
     except elasticsearch.ConnectionError:
         print("es_api: Index impossible de savoir si l index existe")

@@ -1,11 +1,6 @@
 """ es_constants """
-# importer les varibales globales
-import log_generator.es_handler
 
 # ES pipeline, index, templates, ilm
-
-replicaNumber = 0
-shardNumber = 0
 
 # Pipeline
 user_agent_pipeline_name = "pipeline_user_agent"
@@ -155,14 +150,47 @@ index_mapping = {
     }
 }
 
-# Template
+# Templates
 index_template_name = ".pyloggen_template"
-index_template_settings = {
+index_template_settings_1 = {
   "index_patterns": ["pyloggen_*"], 
   "settings": {
     "index.default_pipeline": "pipeline_user_agent",
-    "number_of_shards": shardNumber,
-    "number_of_replicas": replicaNumber,
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "index.lifecycle.rollover_alias": "pyloggen_alias"
+  },
+  "mappings": index_mapping 
+}
+
+index_template_settings_2 = {
+  "index_patterns": ["pyloggen_*"], 
+  "settings": {
+    "index.default_pipeline": "pipeline_user_agent",
+    "number_of_shards": 1,
+    "number_of_replicas": 1,
+    "index.lifecycle.rollover_alias": "pyloggen_alias"
+  },
+  "mappings": index_mapping 
+}
+
+index_template_settings_3 = {
+  "index_patterns": ["pyloggen_*"], 
+  "settings": {
+    "index.default_pipeline": "pipeline_user_agent",
+    "number_of_shards": 2,
+    "number_of_replicas": 2,
+    "index.lifecycle.rollover_alias": "pyloggen_alias"
+  },
+  "mappings": index_mapping 
+}
+
+index_template_settings_4 = {
+  "index_patterns": ["pyloggen_*"], 
+  "settings": {
+    "index.default_pipeline": "pipeline_user_agent",
+    "number_of_shards": 3,
+    "number_of_replicas": 2,
     "index.lifecycle.rollover_alias": "pyloggen_alias"
   },
   "mappings": index_mapping 

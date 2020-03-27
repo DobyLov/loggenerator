@@ -147,8 +147,8 @@ def check_arguments(args: dict):
         es_getSrvResponse(args["esapiip"])
         es_getSrvColorStatus(args["esapiip"])
         es_getSrvVersion(args["esapiip"])
-        es_getNodeNumber(args["esapiip"])
-        es_setShardReplicaNumber()
+        #es_getNodeNumber(args["esapiip"])
+        es_setShardReplicaNumber(args["esapiip"])
         es_check_existing_pipeline(args["esapiip"])
         es_check_existing_template(args["esapiip"])
         #es_check_existing_index(args["esapiip"])
@@ -291,10 +291,8 @@ def main(**kwargs):
             if args["fname"] != "":
                 log2File(output_text, args["fname"])
             if args["esapiip"] != "":
-                print("esapiip detectee")
                 es_add_document(args["esapiip"], output_json)
             if args["webip"] != "":
-                print("addrip detectee")
                 postToHAProxy(args["webip"], output_text_url)
 
     if args["infinite"] == True:
