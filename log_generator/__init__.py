@@ -27,7 +27,7 @@ from urllib import parse as stringParserToUrl
 from os import path
 import shutil  # a tester glob
 from zipfile import ZipFile
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from .words_constants import HASHTAGS, MESSAGE_TWEET, ADJECTIVES, NOUNS
 
 # Variables
@@ -45,6 +45,8 @@ myArray = []
 ua_file = "list_of_comon_user_agent.txt"
 print("ua_path " + myPath + ua_file)
 
+# Variable pour gérer l'Erreur le la ligne vide 
+# lors du parcours du fichier des ips 
 errorCountIndice: int = 0
 
 # http server
@@ -105,29 +107,20 @@ def map_csv2array(myPath: str, myCsvFile: str):
                 except BufferError:
                     print("error: " + BufferError)
             print (str(ctn) + " lignes comptée depuis le fichier : " + myFilePath)
+
     return myArray
 
 def check_arguments(args: dict):
-
     print("________________________________")
     print("")
     print("-  Script générateur de logz   -")
     print("________________________________")
     print("")
-
     print("Script debuté le " + get_dateNow())
-
-    #if args["min_size"] >= args["max_size"]:
-    #    raise ValueError("Max size must be greater than min size")
-    #if args["min_size"] > 14 or args["max_size"] < 8:
-    #    raise ValueError("Word range must be between 3 and 14")
-
+    # Defini le dateTime de debut du script pour le calcule du temps ecoule
+    set_dateTime_start_end_script("start")
     if args["num"] > 10000000:
-        raise ValueError("Can't generate more than 1000 logz")
-    
-    #if args["addrip"]:
-    #    ipaddr = "localhost"
-
+        raise ValueError("NO ! I won't generate more than 1000 logz")
     # Charge le fichier de bdd d adresse ip
     check_bddFile(myPath, myZipFile, myCsvFile)
     # map bdd ip file into an array
@@ -147,18 +140,14 @@ def check_arguments(args: dict):
         es_getSrvResponse(args["esapiip"])
         es_getSrvColorStatus(args["esapiip"])
         es_getSrvVersion(args["esapiip"])
-        #es_getNodeNumber(args["esapiip"])
         es_setShardReplicaNumber(args["esapiip"])
         es_check_existing_pipeline(args["esapiip"])
         es_check_existing_template(args["esapiip"])
-        #es_check_existing_index(args["esapiip"])
 
 
 # Get the tweet for log and url format (cURL)
-def get_log():
-    
+def get_log():    
     global ip_fake, messagetweet, uuid, age
-
     name: str = get_name()
     messagetweet = randchoice(MESSAGE_TWEET)
     row = get_randomRow(myArray)
@@ -168,8 +157,7 @@ def get_log():
     uu_id = get_uuid()
     age = get_age()
     dateNow = get_dateNow()
-    userAgent = ua_get_user_agent(myPath, ua_file, ua_number_of_lines_from_file ) 
-    # msg       
+    userAgent = ua_get_user_agent(myPath, ua_file, ua_number_of_lines_from_file )      
     singleLogToLogFile = ip_fake + " " + dateNow + " " + name + " " + hashTags + " " + '"' + messagetweet + '"' + " " + str(age) + " " + uu_id + " " + country_short + " " + country_long + " " + region + " " + town + " " + longitude + " " + latitude + " " + time_zone + " " + userAgent
     singleLogToUrl = stringParserToUrl.quote(ip_fake + " " + dateNow + " " + name + " " + hashTags + " " + messagetweet + " " + str(age) + " " + uu_id + " " + country_short + " " + country_long + " " + region + " " + town + " " + longitude + " " + latitude + " " + time_zone + " " + userAgent)
     
@@ -193,9 +181,7 @@ def get_log():
                 "town": town,
                 "time_zone": time_zone}
         } 
-    )  
-     
-    
+    ) 
     #print(str(myJsonFormat))
 
     return singleLogToLogFile, singleLogToUrl, singleLogToJson
@@ -214,8 +200,7 @@ def get_name():
     return name
 
 # Retourne la date et l heure
-def get_dateNow():
-    
+def get_dateNow():    
     my_dateTimeNow = datetime.now()
     my_years = str(my_dateTimeNow.year)
     my_months = addZero(str(my_dateTimeNow.month))
@@ -223,21 +208,35 @@ def get_dateNow():
     my_hours = addZero(str(my_dateTimeNow.hour))
     my_minutes = addZero(str(my_dateTimeNow.minute))
     my_seconds = addZero(str(my_dateTimeNow.second))
-    #tz = str(my_dateTimeNow.isoformat() )
     my_concatened_dateNow: str = my_years + "-" + my_months + "-" + my_days + "T" + my_hours + ":" + my_minutes + ":" + my_seconds
 
     return my_concatened_dateNow
-    #return tz
 
 # Ajoute 0 devant les unitees ( jours et mois )
 def addZero(mystr: str):
-
     if len(mystr) == 1:
         zeroBeforeValue = mystr.zfill(2)
     else:
         zeroBeforeValue = mystr
     
     return zeroBeforeValue
+
+# Attribue la dateTime Debut / Fin d'execution du script
+def set_dateTime_start_end_script(startOrEnd):
+    global script_start_dateTime, script_end_dateTime
+    if startOrEnd == "start":
+        script_start_dateTime = get_dateNow()
+    else:
+        script_end_dateTime = get_dateNow()
+
+# Calcule le temp ecoulé d'execution du script
+def calculat_elapsed_time(datetime_end, datetime_start):
+    start = datetime.fromisoformat(datetime_start)
+    end = datetime.fromisoformat(datetime_end)
+    result = end - start
+
+    return str(result)
+
 
 def main(**kwargs):
     """Main."""
@@ -310,6 +309,15 @@ def main(**kwargs):
             if args["esapiip"] != "":
                 es_add_document(args["esapiip"], output_json)
 
+    # -------------------------------------------------
+    # Message de fin de script
+
+    if args["num"] > 1:
+        print("\n==============================================")
+        print("Script terminé : " + get_dateNow())
+        set_dateTime_start_end_script("end")
+        print("Temps: " + calculat_elapsed_time(script_end_dateTime, script_start_dateTime) + " ecoule pour " + str(args["num"]) + " logs generes")
+        print("==============================================")
 
 if __name__ == "__main__":
     main()

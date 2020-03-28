@@ -1,11 +1,10 @@
 # pip install elasticsearch
 # es_handler
-# Test avec ES 7.5
+# Test avec ES 7.5, biento ES7.6
 
 from log_generator.es_constants import index_template_name, index_mapping, index_name_pyloggen
 from log_generator.es_constants import index_template_settings_1, index_template_settings_2, index_template_settings_3, index_template_settings_4
 from log_generator.es_constants import pipeline_user_agent, user_agent_pipeline_name
-#from elasticsearch import Elasticsearch, exceptions 
 import elasticsearch
 from datetime import datetime
 import requests
@@ -13,37 +12,30 @@ import json
 
 # Vérifier si le serveur repond
 def es_getSrvResponse(ip:str):
-
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         if not es.ping():
             print("es_api: " + ip + " ne repond pas")
-
     except elasticsearch.ConnectionError:
         print("es_api: " + ip + " ne repond pas")
         exitProgram()
 
 # recupérér la version de ES
-def es_getSrvVersion(ip:str):    
-    
+def es_getSrvVersion(ip:str): 
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         print("es_api: Cluster version: " + str( es.info()['version'].get("number") ) )
-
     except elasticsearch.ConnectionError:
         print("es_api: " + ip + " ne repond pas")
         exitProgram()
-    
 
 # Vérifier que le serveur est a green
 def es_getSrvColorStatus(ip:str):    
-    
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         cHealth = es.cluster.health()
         if cHealth["status"] == "green":
             print("es_api: Cluster_color: " + str(cHealth["status"]))
-        
         else:
             print("es_api: Attention Cluster_color: " + str(cHealth["status"]))
             exitProgram()
@@ -60,12 +52,11 @@ def es_waitSrvReady(ip:str):
 
 # Recuperer le nombre de noeud du cluster
 def es_getNodeNumber(ip:str):
-    
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         es_cluster_nodeNumber = es.cluster.health()["number_of_nodes"]
         print("es_api: Cluster_number_of_nodes : " + str(es_cluster_nodeNumber) )
-
+    
     except elasticsearch.ElasticsearchException:
         print("es_api: Cluster_Number_of_nodes : impossible de determiner le nombre de noeud")
         exitProgram()
@@ -75,7 +66,6 @@ def es_getNodeNumber(ip:str):
 # Définir le nombre de shard / replica selon le nombre de noeuds
 def es_setShardReplicaNumber(ip:str):
     nodeNumber = es_getNodeNumber(ip)
-
     if nodeNumber == 1:
         shardNumber = 1
         replicaNumber = 0
@@ -92,14 +82,12 @@ def es_setShardReplicaNumber(ip:str):
         shardNumber = 3
         replicaNumber = 2
         template = index_template_settings_4
-
     print("es_api: " + str(nodeNumber) + "_noeud(s) detecte => templateConf: " + str(shardNumber) + "_shard(s) & " + str(replicaNumber) + "_replica(s)" )
 
     return template
 
 # Verifier que le Pipeline existe
 def es_check_existing_pipeline(ip:str):
-    
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         es.ingest.get_pipeline(user_agent_pipeline_name)
@@ -111,11 +99,9 @@ def es_check_existing_pipeline(ip:str):
 
 # Creation du pipeline
 def es_create_new_pipeline(ip:str):
-
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         es.ingest.put_pipeline(user_agent_pipeline_name, pipeline_user_agent)
-        
         if es.ingest.get_pipeline(user_agent_pipeline_name) :
             print("es_api: Pipeline cree => " + user_agent_pipeline_name)
 
@@ -138,7 +124,6 @@ def es_check_existing_template(ip:str):
 # Creation de template
 def es_create_new_template(ip:str):
     index_template_settings = es_setShardReplicaNumber(ip)
-
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         es.indices.put_template(index_template_name, index_template_settings)
@@ -154,10 +139,8 @@ def es_create_new_template(ip:str):
 
 # Verifier si l index existe
 def es_check_existing_index(ip:str):
-
     try:
-        es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
-        index_name: str = index_name_pyloggen + get_gen_date_index()
+        elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         
     except elasticsearch.ConnectionError:
         print("es_api: Index impossible de savoir si l index existe")
@@ -165,11 +148,9 @@ def es_check_existing_index(ip:str):
 
 # Ajouter un index
 def es_create_new_index(ip:str, index_name:str):
-
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         es.index(index_name,{"userAgent":"none"})
-
         if es.indices.exists(index_name):
             print("es_api: Index => " + index_name + " cree")
         else:
@@ -181,19 +162,15 @@ def es_create_new_index(ip:str, index_name:str):
 
 # Ajoute un document dans l index
 def es_add_document(ip:str, payload):
-    
     index_name: str =  index_name_pyloggen + get_gen_date_index()
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         es.index(index_name, payload)
         
-
     except elasticsearch.ElasticsearchException:
         print("es_api: _docAdd il y a un probleme lors de l ajout du document")      
 
-
 def get_gen_date_index():
-
     my_dateTimeNow = datetime.now()
     my_years = str(my_dateTimeNow.year)
     my_months = addZero(str(my_dateTimeNow.month))
@@ -204,7 +181,6 @@ def get_gen_date_index():
 
 # Retourne la date et l heure
 def get_dateNow():
-    
     my_dateTimeNow = datetime.now()
     my_years = str(my_dateTimeNow.year)
     my_months = addZero(str(my_dateTimeNow.month))
@@ -218,7 +194,6 @@ def get_dateNow():
 
 # Ajoute 0 devant les unitees ( jours et mois )
 def addZero(mystr: str):
-
     if len(mystr) == 1:
         zeroBeforeValue = mystr.zfill(2)
     else:
