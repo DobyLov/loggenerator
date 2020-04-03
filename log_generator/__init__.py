@@ -17,7 +17,7 @@ from log_generator.ip_handler import map_csv2array
 from log_generator.files_logs_handler import log2File
 from log_generator.logz_handler import get_log
 from log_generator.network_handler import pingHost
-from log_generator.es_handler import es_getSrvColorStatus, es_getSrvResponse, es_getSrvVersion, es_setShardReplicaNumber, es_check_existing_pipeline, es_check_existing_template
+from log_generator.es_handler import es_getSrvColorStatus, es_getSrvResponse, es_getSrvVersion, es_check_existing_pipeline, es_check_existing_template
 from log_generator.ua_handler import map_ua_csv2array
 from log_generator.es_handler import es_add_document
 from log_generator.webSrv_handler import web_post_document
@@ -75,7 +75,7 @@ def check_arguments(args: dict):
         es_getSrvResponse(args["esapiip"])
         es_getSrvColorStatus(args["esapiip"])
         es_getSrvVersion(args["esapiip"])
-        es_setShardReplicaNumber(args["esapiip"])
+        #es_setShardReplicaNumber(args["esapiip"])
         es_check_existing_pipeline(args["esapiip"])
         es_check_existing_template(args["esapiip"])
 

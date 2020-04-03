@@ -109,7 +109,7 @@ def es_create_new_pipeline(ip:str):
         print("es_api: Pipeline : il y eu un problème a la creation du pipeline")
         exitProgram()
 
-# Verifier que le template existe
+# Verifier que le template existe et en cree un
 def es_check_existing_template(ip:str):
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
