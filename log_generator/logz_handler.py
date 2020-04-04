@@ -43,7 +43,7 @@ def get_log(myIPArray:[], myUAArray:[]):
 
     singleLogToLogFile = ip_fake + " " + dateNow + " " + name + " " + hashTags + " " + '"' + messagetweet + '"' + " " + str(age) + " " + uu_id + " " + country_short + " " + country_long + " " + region + " " + town + " " + longitude + " " + latitude + " " + time_zone + " " + userAgent
     singleLogToUrl = stringParserToUrl.quote(ip_fake + " " + dateNow + " " + name + " " + hashTags + " " + messagetweet + " " + str(age) + " " + uu_id + " " + country_short + " " + country_long + " " + region + " " + town + " " + longitude + " " + latitude + " " + time_zone + " " + userAgent)
-    
+    """    
     singleLogToJson = json.dumps( 
         {
             "ip_address": ip_fake,
@@ -65,5 +65,18 @@ def get_log(myIPArray:[], myUAArray:[]):
                 "time_zone": time_zone}
         } 
     ) 
-    
+    """ 
+    singleLogToJson = json.dumps( 
+        {
+            "ip_address": ip_fake,
+            "dateTime": dateNow,
+            "user": name,
+            "hasTags": hashTagsArray,
+            "message_tweet": messagetweet,
+            "age": age,
+            "uuid": uu_id,
+            "userAgent": userAgent
+        } 
+    ) 
+
     return singleLogToLogFile, singleLogToUrl, singleLogToJson
