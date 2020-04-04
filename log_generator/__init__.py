@@ -17,7 +17,7 @@ from log_generator.ip_handler import map_csv2array
 from log_generator.files_logs_handler import log2File
 from log_generator.logz_handler import get_log
 from log_generator.network_handler import pingHost
-from log_generator.es_handler import es_getSrvColorStatus, es_getSrvResponse, es_getSrvVersion, es_check_existing_pipeline, es_check_existing_template
+from log_generator.es_handler import es_getSrvColorStatus, es_getSrvResponse, es_getSrvVersion, es_check_existing_pipeline, es_check_existing_template, es_get_index_name_datenow, es_count_of_given_indexName
 from log_generator.ua_handler import map_ua_csv2array
 from log_generator.es_handler import es_add_document
 from log_generator.webSrv_handler import web_post_document
@@ -43,6 +43,7 @@ def check_arguments(args: dict):
     print("")
     print("-  Script générateur de logz   -")
     print("________________________________")
+    print("")
     print("Script debuté le " + get_dateNow())
     if args["num"] > 10000000:
         raise ValueError("NO ! I won't generate more than 1000 logz")
@@ -51,6 +52,7 @@ def check_arguments(args: dict):
     print("- Chargement Bdd -")
     print("------------------")
     # Handle IP bdd file
+    chrono_start_load_bdds = get_dateNow()
     if not file_exist_check(myPath + myCsvFile):
         # Check si le fichier Zip existe
         file_exist_check_ifNot_exit(myPath + myZipFile)
@@ -65,6 +67,10 @@ def check_arguments(args: dict):
     if file_exist_check(myPath + myUaFile):
         global myUAArray
         myUAArray = map_ua_csv2array(myPath + myUaFile)
+    else:
+        print("Bdd handler: fichier non trouvé : " + myUaFile)
+        exitProgram()
+    #print("Bdd handler: temps pour charger les bases : " + str( calculat_elapsed_time( get_dateNow(), chrono_start_load_bdds ) ))
 
     if args["esapiip"] != "":
         print(" ")
@@ -75,7 +81,6 @@ def check_arguments(args: dict):
         es_getSrvResponse(args["esapiip"])
         es_getSrvColorStatus(args["esapiip"])
         es_getSrvVersion(args["esapiip"])
-        #es_setShardReplicaNumber(args["esapiip"])
         es_check_existing_pipeline(args["esapiip"])
         es_check_existing_template(args["esapiip"])
 
@@ -115,6 +120,11 @@ def main(**kwargs):
     except ValueError as error:
         print("Error: " + str(error))
         exit(1)
+
+    # MEssage d inforamtion du script partie ES
+    if args["esapiip"] != "" and args["no_print"]:
+        print("es_api: injection des " + str(args["num"]) + " logs")
+        chrono_end_inject_docs = get_dateNow()
     
     # Read args and generate logz
     for _ in range(args["num"]): 
@@ -143,6 +153,23 @@ def main(**kwargs):
             if args["webip"] != "":
                 web_post_document(args["webip"], output_text_url, error_log_file_path)
 
+        if args["esapiip"] != "":
+            injectionArray = []
+            injection_pourcentage_achievement = calc_pourcentage_from_inial_vaule_args_num(_ , args["num"])
+            if args["num"] <= 25:
+                injectionArray = []
+            elif args["num"] > 25 and args["num"] <= 50:
+                injectionArray = [50]
+            elif args["num"] > 50 and args["num"] <= 100:
+                injectionArray = [25, 50, 75]
+            elif args["num"] > 100 and args["num"] <= 1000:
+                injectionArray = [10, 30, 50, 70, 90]
+            elif args["num"] > 1000:
+                injectionArray = [10, 20, 30, 40, 50, 60, 70, 80, 90]           
+
+            if injection_pourcentage_achievement in injectionArray:
+                print("es_api: patientez : tache d'injection à " +  str(injection_pourcentage_achievement) + "%")
+
     if args["infinite"] == True:
 
         while True:
@@ -160,6 +187,10 @@ def main(**kwargs):
 
     # -------------------------------------------------
     # Message de fin de script
+    if args["esapiip"] != "" and args["no_print"]:
+        print("es_api: temps total d'injection des " + str(args["num"]) + " docs => " + str( calculat_elapsed_time(get_dateNow(), chrono_end_inject_docs)) )
+        print("es_api: index : " + es_get_index_name_datenow() + " count = " + str( es_count_of_given_indexName(args["esapiip"], es_get_index_name_datenow()) ) )
+
 
     if args["num"] >= 1:
         print("\n==============================================")
@@ -188,6 +219,10 @@ def randomPause(pauseLevel:int):
 # Réalise une pause de x secondes
 def makePause(pauseTime):
     time.sleep(pauseTime)
+
+
+def calc_pourcentage_from_inial_vaule_args_num(given_number:int, initial_number:int):
+    return given_number * 100 / initial_number
 
 # sortir du programme
 def exitProgram():

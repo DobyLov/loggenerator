@@ -153,7 +153,7 @@ index_mapping = {
 # Templates
 index_template_name = ".pyloggen_template"
 index_template_settings_1 = {
-  "index_patterns": ["pyloggen_*"], 
+  "index_patterns": [index_name_pyloggen + "*"], 
   "settings": {
     "index.default_pipeline": "pipeline_user_agent",
     "number_of_shards": 1,
@@ -164,7 +164,7 @@ index_template_settings_1 = {
 }
 
 index_template_settings_2 = {
-  "index_patterns": ["pyloggen_*"], 
+  "index_patterns": [index_name_pyloggen + "*"], 
   "settings": {
     "index.default_pipeline": "pipeline_user_agent",
     "number_of_shards": 1,
@@ -175,7 +175,7 @@ index_template_settings_2 = {
 }
 
 index_template_settings_3 = {
-  "index_patterns": ["pyloggen_*"], 
+  "index_patterns": [index_name_pyloggen + "*"], 
   "settings": {
     "index.default_pipeline": "pipeline_user_agent",
     "number_of_shards": 2,
@@ -186,7 +186,7 @@ index_template_settings_3 = {
 }
 
 index_template_settings_4 = {
-  "index_patterns": ["pyloggen_*"], 
+  "index_patterns": [index_name_pyloggen + "*"], 
   "settings": {
     "index.default_pipeline": "pipeline_user_agent",
     "number_of_shards": 3,
