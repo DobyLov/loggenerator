@@ -122,7 +122,7 @@ def main(**kwargs):
         exit(1)
 
     # MEssage d inforamtion du script partie ES
-    if args["esapiip"] != "" and args["no_print"]:
+    if args["esapiip"] != "":
         print("es_api: injection des " + str(args["num"]) + " logs")
         chrono_end_inject_docs = get_dateNow()
     
@@ -167,8 +167,9 @@ def main(**kwargs):
             elif args["num"] > 1000:
                 injectionArray = [10, 20, 30, 40, 50, 60, 70, 80, 90]           
 
-            if injection_pourcentage_achievement in injectionArray:
-                print("es_api: patientez : tache d'injection à " +  str(injection_pourcentage_achievement) + "%")
+            if args["no_print"] == True:
+                if injection_pourcentage_achievement in injectionArray:
+                    print("es_api: patientez : tache d'injection à " +  str(injection_pourcentage_achievement) + "%")
 
     if args["infinite"] == True:
 
@@ -187,7 +188,7 @@ def main(**kwargs):
 
     # -------------------------------------------------
     # Message de fin de script
-    if args["esapiip"] != "" and args["no_print"]:
+    if args["esapiip"] != "":
         print("es_api: temps total d'injection des " + str(args["num"]) + " docs => " + str( calculat_elapsed_time(get_dateNow(), chrono_end_inject_docs)) )
         print("es_api: index : " + es_get_index_name_datenow() + " count = " + str( es_count_of_given_indexName(args["esapiip"], es_get_index_name_datenow()) ) )
 
