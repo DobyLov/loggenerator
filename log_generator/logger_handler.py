@@ -16,9 +16,7 @@ def logger_configurator():
         levelLoggin_str = "ERROR"
         levelLogging = 40
         create_file_log_level(levelLoggin_str)
-
-    print(str(levelLogging))
-    print(str(levelLoggin_str))
+        
     return logging.basicConfig(
                         filename="./loggen_" + levelLoggin_str + ".log",
                         level=levelLogging,
