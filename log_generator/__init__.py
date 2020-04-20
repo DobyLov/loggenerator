@@ -21,32 +21,35 @@ from log_generator.es_handler import es_getSrvColorStatus, es_getSrvResponse, es
 from log_generator.ua_handler import map_ua_csv2array
 from log_generator.es_handler import es_add_document
 from log_generator.webSrv_handler import web_post_document
+from log_generator.logger_handler import logger_configurator, logLevel_Converter, check_exist_log_level, create_file_log_level, get_logLevel_from_file
 from random import choice as randchoice
-import random, time, uuid
-import shutil
+import random, time, uuid, shutil, logging
 
 # --------------------------------------
-# Variables
-# Date
 startScript = get_dateNow()
 myPath = "./log_generator/"
 myCsvFile = "IP2LOCATION-LITE-DB11.CSV"
 myZipFile = "IP2LOCATION-LITE-DB11.CSV.ZIP"
 lineNumber:int = 0
 myUaFile = "list_of_comon_user_agent.txt"
-#errorCountIndice: int = 0
 error_log_file_path = "./error_httpLogFile.txt"
 
+logger = logging.getLogger(__name__)
 
 def check_arguments(args: dict):
+    logger_configurator()
+    global logger
+    logger = logging.getLogger(__name__)
     print("________________________________")
     print("")
     print("-  Script générateur de logz   -")
     print("________________________________")
     print("")
     print("Script debuté le " + get_dateNow())
-    if args["num"] > 10000000:
-        raise ValueError("NO ! I won't generate more than 1000 logz")
+    if args["num"] <= 0:
+        raise ValueError("Je suis hors competence pour realiser votre demande irrationnelle ...\n Par example vous pourriez posez la question a siri ou Alexa :)")
+    if args["num"] >= 500000:
+        raise ValueError("Je suis desole mais je ne veux pas realiser une demande aussi grande\n passez en mode --infinite ou alors voyez ca avec le super calculateur de Google :)")
     
     print("------------------")
     print("- Chargement Bdd -")
@@ -86,6 +89,8 @@ def check_arguments(args: dict):
 
 def main(**kwargs):
     """Main."""
+    
+    logger.info("Debut de script de generateur de logz")
     # parse command line arguments
     parser = ArgumentParser(description="Generate log.")
     
@@ -107,6 +112,8 @@ def main(**kwargs):
                         help="prevent pause printing logs to terminal")
     parser.add_argument("--esapiip", default="", type=str,
                     help="elastic api ip address")
+    parser.add_argument("--loglvl", default="ERROR", type=str,
+                    help="logger level (DEBUG, INFO, WARNING, ERROR)")
     parser.add_argument("--bulknum", metavar="NUMBER", type=int,
                     default=1, help="number of indices to send es api bulk")
 
@@ -123,10 +130,9 @@ def main(**kwargs):
 
     # MEssage d inforamtion du script partie ES
     if args["esapiip"] != "":
-        print("es_api: injection des " + str(args["num"]) + " logs")
+        print("es_api: injection de(s) " + str(args["num"]) + " log(s)")
         chrono_end_inject_docs = get_dateNow()
     
-    # Read args and generate logz
     for _ in range(args["num"]): 
         output_text, output_text_url, output_json = get_log(myIPArray, myUAArray)
         if (args == "" or args["num"] == 1) and args["infinite"] == False:
@@ -171,8 +177,8 @@ def main(**kwargs):
                 if injection_pourcentage_achievement in injectionArray:
                     print("es_api: patientez : tache d'injection à " +  str(injection_pourcentage_achievement) + "%")
 
+    
     if args["infinite"] == True:
-
         while True:
             output_text, output_text_url, output_json = get_log(myIPArray, myUAArray)
             if not args["no_pause"]:
@@ -189,7 +195,7 @@ def main(**kwargs):
     # -------------------------------------------------
     # Message de fin de script
     if args["esapiip"] != "":
-        print("es_api: temps total d'injection des " + str(args["num"]) + " docs => " + str( calculat_elapsed_time(get_dateNow(), chrono_end_inject_docs)) )
+        print("es_api: temps total d'injection du/des " + str(args["num"]) + " doc(s) => " + str( calculat_elapsed_time(get_dateNow(), chrono_end_inject_docs)) )
         print("es_api: index : " + es_get_index_name_datenow() + " count = " + str( es_count_of_given_indexName(args["esapiip"], es_get_index_name_datenow()) ) )
 
 
@@ -197,11 +203,11 @@ def main(**kwargs):
         print("\n==============================================")
         print("Script terminé à : " + get_dateNow())
         print("Temps: " + str( calculat_elapsed_time(get_dateNow(), startScript) ) + " écoulé pour " + str(args["num"]) + " logs générés")
+        print("Log level = " + get_logLevel_from_file() )
         print("==============================================")
-    
+
 if __name__ == "__main__":
     main()
-
 # Random pour des pauses en millisecondes puis en secondes 
 def randomPause(pauseLevel:int):
     # Lent x docs / min

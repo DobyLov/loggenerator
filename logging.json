@@ -1,0 +1,52 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+      "simple": {
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+      }
+    },
+  
+    "debug_file_handler": {
+        "class": "logging.handlers.RotatingFileHandler",
+        "level": "DEBUG",
+        "formatter": "simple",
+        "filename": "loggen_debug.log",
+        "maxBytes": 10485760,
+        "backupCount": 20,
+        "encoding": "utf8"
+    },
+  
+    "info_file_handler": {
+        "class": "logging.handlers.RotatingFileHandler",
+        "level": "INFO",
+        "formatter": "simple",
+        "filename": "loggen_info.log",
+        "maxBytes": 10485760,
+        "backupCount": 20,
+        "encoding": "utf8"
+    },
+  
+    "error_file_handler": {
+        "class": "logging.handlers.RotatingFileHandler",
+        "level": "ERROR",
+        "formatter": "simple",
+        "filename": "loggen_error.log",
+        "maxBytes": 10485760,
+        "backupCount": 20,
+        "encoding": "utf8"
+    },
+  
+    "loggers": {
+      "my_module": {
+        "level": "ERROR",
+        "handlers": ["console"],
+        "propagate": false
+      }
+    },
+  
+    "root": {
+      "level": "INFO",
+      "handlers": ["debug_file_handler", "info_file_handler", "error_file_handler"]
+    }
+}

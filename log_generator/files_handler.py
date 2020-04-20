@@ -35,6 +35,14 @@ def remove_directory(folder:str):
         print("File handler: problème avec la suppression du repertoire")
         exitProgram()
 
+def remove_file(file:str):
+    try:
+        os.path.isfile(file)
+        os.remove(file)   
+    except OSError:
+        print("File handler: problème avec la suppression du fichier")
+        exitProgram()
+
 # Deplacer un repertoire
 def move_directory(src_path:str, dest_path:str):
     try:
@@ -76,3 +84,27 @@ def move_file(src_path_file:str, dest_path_file:str):
         shutil.move(src_path_file, dest_path_file)
     except:
         print("File handler: le fichier " + src_path_file + " deplace vers : " + dest_path_file)
+
+
+# Ecrire dans le fichier de persistance des logs enseigné par 
+# l'argument au lancement de la ligne de commande
+def write_file(fileNamePath: str, content: str):
+    try:
+        file = open(fileNamePath, "a")
+        file.write(content + "\n")
+        
+    except OSError:
+        print("File handler: Impossible decrire dans le fichier  " + fileNamePath)
+        exitProgram()
+
+# Lire un fichier texte
+def read_file(filename:str):
+    try:
+        with open(filename, "r") as fileToRead:
+            line = fileToRead.readline()
+
+    except IOError:
+        print("file_handler: impossible d'ouvrir le fichier pour la lecture: " + filename)
+        exitProgram()   
+
+    return line

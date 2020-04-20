@@ -5,11 +5,15 @@
 from log_generator.es_constants import index_template_name, index_mapping, index_name_pyloggen
 from log_generator.es_constants import index_template_settings_1, index_template_settings_2, index_template_settings_3, index_template_settings_4
 from log_generator.es_constants import pipeline_user_agent, user_agent_pipeline_name
+from log_generator.logger_handler import logger_configurator, logLevel_Converter
 from log_generator.exit_program import exitProgram
-import elasticsearch
+import elasticsearch, requests, json, logging
 from datetime import datetime
-import requests
-import json
+
+
+# logger du module
+logger_configurator()
+logger = logging.getLogger(__name__)
 
 # Vérifier si le serveur repond
 def es_getSrvResponse(ip:str):
@@ -164,12 +168,15 @@ def es_create_new_index(ip:str, index_name:str):
 # Ajoute un document dans l index
 def es_add_document(ip:str, payload):
     index_name: str =  index_name_pyloggen + get_gen_date_index()
+    #logger.error("es_error_pouligouli")
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         es.index(index_name, payload)
-        
+        logger.info("Document ajouté")
+        logger.error("Document ajouté")
     except elasticsearch.ElasticsearchException:
         print("es_api: _docAdd il y a un probleme lors de l ajout du document")      
+        logger.error("propbleme lors de l'ajout du document")
 
 def get_gen_date_index():
     my_dateTimeNow = datetime.now()
