@@ -21,7 +21,7 @@ def gen_Hashtags():
 
 # Random pour le nombre de #HASTAGS 1, 2, 3, 4, 5
 def randomNbHashtags():
-    return random.randrange(1, 5, 1)
+    return random.randrange(1, 10, 1)
 
 # Random sur les Hashtags
 def randomHashtags():

@@ -7,6 +7,7 @@ from log_generator.es_constants import index_template_settings_1, index_template
 from log_generator.es_constants import pipeline_user_agent, user_agent_pipeline_name
 from log_generator.logger_handler import logger_configurator, logLevel_Converter
 from log_generator.exit_program import exitProgram
+from log_generator.dateTime_handler import get_date_onlyDate_now
 import elasticsearch, requests, json, logging
 from datetime import datetime
 
@@ -179,14 +180,15 @@ def es_add_document(ip:str, payload):
         logger.error("propbleme lors de l'ajout du document")
 
 def get_gen_date_index():
+    """
     my_dateTimeNow = datetime.now()
     my_years = str(my_dateTimeNow.year)
     my_months = addZero(str(my_dateTimeNow.month))
     my_days = addZero(str(my_dateTimeNow.day))
     my_concatened_dateNow: str = my_years + "_" + my_months + "_" + my_days
-
-    return my_concatened_dateNow
-
+    """
+    return get_date_onlyDate_now()
+"""
 # Retourne la date et l heure
 def get_dateNow():
     my_dateTimeNow = datetime.now()
@@ -208,6 +210,7 @@ def addZero(mystr: str):
         zeroBeforeValue = mystr
     
     return zeroBeforeValue
+"""
 
 # Retourne l index name du jour
 def es_get_index_name_datenow():

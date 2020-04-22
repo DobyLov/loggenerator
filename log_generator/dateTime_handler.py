@@ -24,6 +24,15 @@ def addZero(mystr: str):
     
     return zeroBeforeValue
 
+def get_date_onlyDate_now():
+    my_dateTimeNow = datetime.now()
+    my_years = str(my_dateTimeNow.year)
+    my_months = addZero(str(my_dateTimeNow.month))
+    my_days = addZero(str(my_dateTimeNow.day))
+    my_concatened_dateNow: str = my_years + "_" + my_months + "_" + my_days
+
+    return my_concatened_dateNow
+
 # retourne
 #def set_dateTime_start_end_script():
 #    #global script_start_dateTime, script_end_dateTime
