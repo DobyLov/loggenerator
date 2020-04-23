@@ -179,6 +179,9 @@ def es_add_document(ip:str, payload):
         print("es_api: _docAdd il y a un probleme lors de l ajout du document")      
         logger.error("propbleme lors de l'ajout du document")
 
+def es_add_document_bulk():
+    return
+
 def get_gen_date_index():
     """
     my_dateTimeNow = datetime.now()
