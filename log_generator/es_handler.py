@@ -180,6 +180,7 @@ def es_add_document(ip:str, payload):
         logger.error("propbleme lors de l'ajout du document")
 
 def es_add_document_bulk():
+    
     return
 
 def get_gen_date_index():
