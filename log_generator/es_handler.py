@@ -182,23 +182,46 @@ def es_add_document(ip:str, payload):
 # recupere le nombre de shard d un index
 def es_get_index_shard_number(ip:str):
     try:
+        index_name_today:str = es_get_index_name_datenow() 
         es = elasticsearch.Elasticsearch([{'host':ip, 'port': 9200}])
-        result = es.indices.get_settings("pyloggen_2020_04_26")
-        print(str( result['pyloggen_2020_04_26']['settings']['index']['number_of_shards'] ))
-        #print( str(es.search_shards("pyloggen_2020_04_26")["nodes"] ) )
-        #print( str(es.indices("pyloggen_2020_04_26")  ))
+        result = es.indices.get_settings(index_name_today)[index_name_today]['settings']['index']['number_of_shards']
+
     except elasticsearch.ElasticsearchException:
         print("es_api: _get_index_shard_number: nombre de shard non recupere")      
         logger.error("propbleme lors de la recuperation du nombre de shard de l index: ")
-    return
+    return result
 
 # Définir ne nombre d' "active shard" en fonction 
 # du nombre total de shard dans l index  
-def es_wait_activ_shard_number():
+def es_set_wait_activ_shard_number(ip:str):
     # Recuperer le nombre de shard de l index
+    index_shard_number = es_get_index_shard_number(ip)
+    # calculer le nombre de active shard
+    active_shard = es_calculate_wait_activ_shard_number(index_shard_number)
     # Definir le nombre dactive shard
-    return
+    es_config_wait_activ_shard(ip, active_shard)
 
+# Calculer le nombre de wait activ shard en focntion du nombre de shards de lindex
+# utilisation de ternaire contitionnal
+def es_calculate_wait_activ_shard_number(index_shard_number:int):
+    return (index_shard_number-1, 1)[index_shard_number>1]
+
+# configure l index avec le wait activshard
+def es_config_wait_activ_shard(ip:str, activ_shard:int):
+    index_set_wait_active_shards = {
+        "settings": {
+            "index.write.wait_for_active_shards" : activ_shard
+        }
+    }
+    try:
+        es = elasticsearch.Elasticsearch([{'host':ip, 'port': 9200}])
+        es.indices.put_settings(index_set_wait_active_shards, es_get_index_name_datenow())
+        #es.indices.put_template(es_get_index_name_datenow(), index_set_wait_active_shards)
+        logger.info("es_api: es_config_wait_aciv_shard_number à: " + activ_shard + " shard(s)")
+
+    except elasticsearch.ElasticsearchException:
+        print("es_api: es_config_index_shard_number probleme")      
+        logger.error("propbleme lors du setting du wait_activ_shard ")
 
 def es_add_document_bulk():
 
