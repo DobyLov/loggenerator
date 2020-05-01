@@ -156,14 +156,14 @@ def es_check_existing_index(ip:str):
 def es_create_new_index(ip:str, index_name:str):
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
-        es.index(index_name,{"userAgent":"none"})
+        es.index(index_name,{"userAgent":"none","ip_address":'1.1.1.1'})
         if es.indices.exists(index_name):
             print("es_api: Index => " + index_name + " cree")
         else:
             print("es_api: Index non cree " + index_name)
 
     except elasticsearch.ElasticsearchException:
-        print("es_api: Index probleme a la creation")
+        print("es_api: probleme a la creationde l index")
         exitProgram()
 
 # Ajoute un document dans l index
@@ -179,38 +179,61 @@ def es_add_document(ip:str, payload):
         print("es_api: _docAdd il y a un probleme lors de l ajout du document")      
         logger.error("propbleme lors de l'ajout du document")
 
+# recupere le nombre de shard d un index
+def es_get_index_shard_number(ip:str):
+    try:
+        index_name_today:str = es_get_index_name_datenow() 
+        es = elasticsearch.Elasticsearch([{'host':ip, 'port': 9200}])
+        result = es.indices.get_settings(index_name_today)[index_name_today]['settings']['index']['number_of_shards']
+
+    except elasticsearch.ElasticsearchException:
+        print("es_api: _get_index_shard_number: nombre de shard non recupere")      
+        logger.error("propbleme lors de la recuperation du nombre de shard de l index: ")
+    return int(result)
+
+# Définir ne nombre d' "active shard" en fonction 
+# du nombre total de shard dans l index  
+def es_set_wait_activ_shard_number(ip:str):
+    # Recuperer le nombre de shard de l index
+    index_shard_number = es_get_index_shard_number(ip)
+    # calculer le nombre de active shard
+    active_shard = es_calculate_wait_activ_shard_number(index_shard_number)
+    # Definir le nombre dactive shard
+    es_config_wait_activ_shard(ip, active_shard)
+
+# Calculer le nombre de wait activ shard en focntion du nombre de shards de l index
+# utilisation de ternaire contitionnal
+def es_calculate_wait_activ_shard_number(index_shard_number:int):
+    return (int(1),int(index_shard_number-1))[index_shard_number>1]
+
+# configure l index avec le wait activshard
+def es_config_wait_activ_shard(ip:str, active_shard:int):
+    index_set_wait_active_shards = {
+        "settings": {
+            "index.write.wait_for_active_shards" : active_shard
+        }
+    }
+    try:
+        es = elasticsearch.Elasticsearch([{'host':ip, 'port': 9200}])
+        es.indices.put_settings(index_set_wait_active_shards, es_get_index_name_datenow())
+        logger.info("es_api: es_config_wait_aciv_shard_number à: " + str(active_shard) + " shard(s)")
+
+    except elasticsearch.ElasticsearchException:
+        print("es_api: es_config_index_shard_number probleme")      
+        logger.error("propbleme lors du setting du wait_activ_shard ")
+
+# preparation du contexte de bulk
+def es_bulk_configuration(ip:str):
+    es_create_new_index(ip, es_get_index_name_datenow())
+    es_config_wait_activ_shard(ip, es_get_index_name_datenow())
+    es_set_wait_activ_shard_number(ip)
+
+def es_add_document_bulk():
+    return
+
+# Recupere juste la date
 def get_gen_date_index():
-    """
-    my_dateTimeNow = datetime.now()
-    my_years = str(my_dateTimeNow.year)
-    my_months = addZero(str(my_dateTimeNow.month))
-    my_days = addZero(str(my_dateTimeNow.day))
-    my_concatened_dateNow: str = my_years + "_" + my_months + "_" + my_days
-    """
     return get_date_onlyDate_now()
-"""
-# Retourne la date et l heure
-def get_dateNow():
-    my_dateTimeNow = datetime.now()
-    my_years = str(my_dateTimeNow.year)
-    my_months = addZero(str(my_dateTimeNow.month))
-    my_days = addZero(str(my_dateTimeNow.day))
-    my_hours = addZero(str(my_dateTimeNow.hour))
-    my_minutes = addZero(str(my_dateTimeNow.minute))
-    my_seconds = addZero(str(my_dateTimeNow.second))
-    my_concatened_dateNow: str = my_years + "-" + my_months + "-" + my_days + " " + my_hours + ":" + my_minutes + ":" + my_seconds
-
-    return my_concatened_dateNow
-
-# Ajoute 0 devant les unitees ( jours et mois )
-def addZero(mystr: str):
-    if len(mystr) == 1:
-        zeroBeforeValue = mystr.zfill(2)
-    else:
-        zeroBeforeValue = mystr
-    
-    return zeroBeforeValue
-"""
 
 # Retourne l index name du jour
 def es_get_index_name_datenow():
