@@ -174,7 +174,6 @@ def es_add_document(ip:str, payload):
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         es.index(index_name, payload)
         logger.info("Document ajouté")
-        logger.error("Document ajouté")
     except elasticsearch.ElasticsearchException:
         print("es_api: _docAdd il y a un probleme lors de l ajout du document")      
         logger.error("propbleme lors de l'ajout du document")
@@ -227,6 +226,10 @@ def es_bulk_configuration(ip:str):
     es_create_new_index(ip, es_get_index_name_datenow())
     es_config_wait_activ_shard(ip, es_get_index_name_datenow())
     es_set_wait_activ_shard_number(ip)
+
+# Calculer le nombre de document a inserer dans un bulk
+def es_bulk_number_calculator():
+    return
 
 def es_add_document_bulk():
     return
