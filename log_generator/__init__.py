@@ -86,7 +86,7 @@ def check_arguments(args: dict):
         es_getSrvVersion(args["esapiip"])
         es_check_existing_pipeline(args["esapiip"])
         es_check_existing_template(args["esapiip"])
-        #es_bulk_configuration(args["esapiip"])
+        es_bulk_configuration(args["esapiip"])
 
 def main(**kwargs):
     """Main."""

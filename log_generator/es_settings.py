@@ -128,13 +128,7 @@ mapping = {
 			}
 		},
 		"ip_address": {
-			"type": "text",
-			"fields": {
-				"keyword": {
-					"type": "keyword",
-					"ignore_above": 256
-				}
-			}
+			"type": "ip"
 		},
 		"message_tweet": {
 			"type": "text",
