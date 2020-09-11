@@ -190,42 +190,9 @@ def es_get_index_shard_number(ip:str):
         logger.error("propbleme lors de la recuperation du nombre de shard de l index: ")
     return int(result)
 
-# Définir ne nombre d' "active shard" en fonction 
-# du nombre total de shard dans l index  
-def es_set_wait_activ_shard_number(ip:str):
-    # Recuperer le nombre de shard de l index
-    index_shard_number = es_get_index_shard_number(ip)
-    # calculer le nombre de active shard
-    active_shard = es_calculate_wait_activ_shard_number(index_shard_number)
-    # Definir le nombre dactive shard
-    es_config_wait_activ_shard(ip, active_shard)
-
-# Calculer le nombre de wait activ shard en focntion du nombre de shards de l index
-# utilisation de ternaire contitionnal
-def es_calculate_wait_activ_shard_number(index_shard_number:int):
-    return (int(1),int(index_shard_number-1))[index_shard_number>1]
-
-# configure l index avec le wait activshard
-def es_config_wait_activ_shard(ip:str, active_shard:int):
-    index_set_wait_active_shards = {
-        "settings": {
-            "index.write.wait_for_active_shards" : active_shard
-        }
-    }
-    try:
-        es = elasticsearch.Elasticsearch([{'host':ip, 'port': 9200}])
-        es.indices.put_settings(index_set_wait_active_shards, es_get_index_name_datenow())
-        logger.info("es_api: es_config_wait_aciv_shard_number à: " + str(active_shard) + " shard(s)")
-
-    except elasticsearch.ElasticsearchException:
-        print("es_api: es_config_index_shard_number probleme")      
-        logger.error("propbleme lors du setting du wait_activ_shard ")
-
 # preparation du contexte de bulk
 def es_bulk_configuration(ip:str):
     es_create_new_index(ip, es_get_index_name_datenow())
-    es_config_wait_activ_shard(ip, es_get_index_name_datenow())
-    es_set_wait_activ_shard_number(ip)
 
 # Calculer le nombre de document a inserer dans un bulk
 def es_bulk_number_calculator():
