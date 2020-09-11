@@ -11,9 +11,11 @@ def gen_Hashtags():
     hashTagStr = randomHashtags()
     hashtagsArray.append(hashTagStr)
     for i in range(nbHastag):
-        if i > 1: 
-            addSeparator:str = ('"' + ", " + '"')
-            addAshtag = randomHashtags()
+        if i > 1:
+            addAshtag = randomHashtags() 
+            while checkHashTagIsPresent(hashtagsArray, addAshtag) == True:
+                addAshtag = randomHashtags()
+            addSeparator:str = ('"' + ", " + '"') 
             hashTagStr = hashTagStr + addSeparator + addAshtag
             hashtagsArray.append(addAshtag)
 
@@ -26,3 +28,12 @@ def randomNbHashtags():
 # Random sur les Hashtags
 def randomHashtags():
     return randchoice(HASHTAGS)
+
+# Check if hashtag is already present in 
+def checkHashTagIsPresent(givenHashTagsArray, givenHashTag:str):
+    hTagIsPresent:bool = False
+    for hTags in givenHashTagsArray:
+        if hTags == givenHashTag:
+            hTagIsPresent = True
+            break
+    return hTagIsPresent
