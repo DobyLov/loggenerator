@@ -131,8 +131,11 @@ def main(**kwargs):
 
     # MEssage d inforamtion du script partie ES
     if args["esapiip"] != "":
-        print("es_api: injection de(s) " + str(args["num"]) + " log(s)")
-        chrono_end_inject_docs = get_dateNow()
+        if args["infinite"] !="":
+            print("es_api: injection sans fin de documents, seul ctrl +c pour quitter.")
+        else:
+            print("es_api: injection de(s) " + str(args["num"]) + " log(s)")
+            chrono_end_inject_docs = get_dateNow()
     
     for _ in range(args["num"]): 
         output_text, output_text_url, output_json = get_log(myIPArray, myUAArray)
