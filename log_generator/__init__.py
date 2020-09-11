@@ -25,6 +25,7 @@ from log_generator.logger_handler import logger_configurator, logLevel_Converter
 from random import choice as randchoice
 import random, time, uuid, shutil, logging
 
+
 # --------------------------------------
 startScript = get_dateNow()
 myPath = "./log_generator/"
@@ -131,11 +132,11 @@ def main(**kwargs):
 
     # MEssage d inforamtion du script partie ES
     if args["esapiip"] != "":
+        chrono_end_inject_docs = get_dateNow()  
         if args["infinite"] !="":
             print("es_api: injection sans fin de documents, seul ctrl +c pour quitter.")
         else:
-            print("es_api: injection de(s) " + str(args["num"]) + " log(s)")
-            chrono_end_inject_docs = get_dateNow()
+            print("es_api: injection de(s) " + str(args["num"]) + " log(s)")  
     
     for _ in range(args["num"]): 
         output_text, output_text_url, output_json = get_log(myIPArray, myUAArray)
