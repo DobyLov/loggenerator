@@ -34,6 +34,10 @@ myZipFile = "IP2LOCATION-LITE-DB11.CSV.ZIP"
 lineNumber:int = 0
 myUaFile = "list_of_comon_user_agent.txt"
 error_log_file_path = "./error_httpLogFile.txt"
+# les tableaux ip et userAgent sont initialisé ici
+# Et sont porté a global dans la methode "check_argument"
+myIPArray = []
+myUAArray = []
 
 logger = logging.getLogger(__name__)
 
