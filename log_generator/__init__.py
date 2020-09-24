@@ -19,7 +19,7 @@ from log_generator.logz_handler import get_log
 from log_generator.network_handler import pingHost
 from log_generator.es_handler import es_getSrvColorStatus, es_getSrvResponse, es_getSrvVersion, es_check_existing_pipeline, es_check_existing_template, es_get_index_name_datenow, es_count_of_given_indexName
 from log_generator.ua_handler import map_ua_csv2array
-from log_generator.es_handler import es_add_document, es_get_index_shard_number, es_bulk_configuration
+from log_generator.es_handler import es_add_document, es_get_index_shard_number
 from log_generator.webSrv_handler import web_post_document
 from log_generator.logger_handler import logger_configurator, logLevel_Converter, check_exist_log_level, create_file_log_level, get_logLevel_from_file
 from random import choice as randchoice
@@ -91,7 +91,6 @@ def check_arguments(args: dict):
         es_getSrvVersion(args["esapiip"])
         es_check_existing_pipeline(args["esapiip"])
         es_check_existing_template(args["esapiip"])
-        es_bulk_configuration(args["esapiip"])
 
 def main(**kwargs):
     """Main."""
@@ -137,7 +136,7 @@ def main(**kwargs):
     # MEssage d inforamtion du script partie ES
     if args["esapiip"] != "":
         chrono_end_inject_docs = get_dateNow()  
-        if args["infinite"] !="":
+        if args["infinite"] == True:
             print("es_api: injection sans fin de documents, seul ctrl +c pour quitter.")
         else:
             print("es_api: injection de(s) " + str(args["num"]) + " log(s)")  
@@ -164,13 +163,16 @@ def main(**kwargs):
             if args["fname"] != "":
                 log2File(output_text, args["fname"])
             if args["esapiip"] != "":
-                es_add_document(args["esapiip"], output_json)
+                es_add_document(args["esapiip"], output_json, int(args["num"]), _)
             if args["webip"] != "":
                 web_post_document(args["webip"], output_text_url, error_log_file_path)
-
+        
         if args["esapiip"] != "":
+            if args["num"] > 11:
+                print ("es_api: Bulk_mode actif")
+        """
             injectionArray = []
-            injection_pourcentage_achievement = calc_pourcentage_from_inial_vaule_args_num(_ , args["num"])
+            injection_pourcentage_achievement = calc_pourcentage_from_inial_vaule_args_num(_, args["num"])
             if args["num"] <= 25:
                 injectionArray = []
             elif args["num"] > 25 and args["num"] <= 50:
@@ -184,8 +186,8 @@ def main(**kwargs):
 
             if args["no_print"] == True:
                 if injection_pourcentage_achievement in injectionArray:
-                    print("es_api: patientez : tache d'injection à " +  str(injection_pourcentage_achievement) + "%")
-
+                    print("es_api: patientez : Mise en mémoire à " +  str(injection_pourcentage_achievement) + "%")
+        """
     
     if args["infinite"] == True:
         while True:
@@ -205,7 +207,7 @@ def main(**kwargs):
     # Message de fin de script
     if args["esapiip"] != "":
         print("es_api: temps total d'injection du/des " + str(args["num"]) + " doc(s) => " + str( calculat_elapsed_time(get_dateNow(), chrono_end_inject_docs)) )
-        print("es_api: index : " + es_get_index_name_datenow() + " count = " + str( es_count_of_given_indexName(args["esapiip"], es_get_index_name_datenow()) ) )
+        #print("es_api: index : " + es_get_index_name_datenow() + " count = " + str( es_count_of_given_indexName(args["esapiip"], es_get_index_name_datenow()) ) )
 
 
     if args["num"] >= 1:

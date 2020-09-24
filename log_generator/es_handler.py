@@ -9,12 +9,16 @@ from log_generator.logger_handler import logger_configurator, logLevel_Converter
 from log_generator.exit_program import exitProgram
 from log_generator.dateTime_handler import get_date_onlyDate_now
 import elasticsearch, requests, json, logging
+from elasticsearch import helpers
+import time
 from datetime import datetime
 
 
 # logger du module
 logger_configurator()
 logger = logging.getLogger(__name__)
+
+bulkToProcess = []
 
 # Vérifier si le serveur repond
 def es_getSrvResponse(ip:str):
@@ -40,7 +44,7 @@ def es_getSrvColorStatus(ip:str):
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         cHealth = es.cluster.health()
-        if cHealth["status"] == "green":
+        if cHealth["status"] == "green" or cHealth["status"] == "yellow":
             print("es_api: Cluster_color: " + str(cHealth["status"]))
         else:
             print("es_api: Attention Cluster_color: " + str(cHealth["status"]))
@@ -166,17 +170,49 @@ def es_create_new_index(ip:str, index_name:str):
         print("es_api: probleme a la creationde l index")
         exitProgram()
 
-# Ajoute un document dans l index
-def es_add_document(ip:str, payload):
+# Ajout de document dans l index
+def es_add_document(ip:str, payload,totalOfIdicesToSend:int, actualIndiceNumber:int):
+    global bulkToProcess
+    if totalOfIdicesToSend < 11:
+        es_send_single_document(ip,payload)
+    else:
+        bulkToProcess.append(payload)
+        print("es_api: Json injection to array")
+        if len(bulkToProcess) == totalOfIdicesToSend:
+            bulkProcess_State(totalOfIdicesToSend, actualIndiceNumber)
+            es_add_document_to_buk(ip, convert_arrayToBulk(bulkToProcess))
+            
+
+def convert_arrayToBulk(bulkToProcess):
+    jsonBulk:str = ""
+    index_name = index_name_pyloggen + get_gen_date_index()
+    for document in bulkToProcess:
+        yield {
+            "_index" : index_name,
+            "_type" : "_doc",
+            "_source" : document
+        }
+    
+def es_send_single_document(ip:str, payload):
     index_name: str =  index_name_pyloggen + get_gen_date_index()
-    #logger.error("es_error_pouligouli")
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         es.index(index_name, payload)
         logger.info("Document ajouté")
     except elasticsearch.ElasticsearchException:
-        print("es_api: _docAdd il y a un probleme lors de l ajout du document")      
+        print("es_api: _docAdd_Single_doc: il y a un probleme lors de l ajout du document")      
         logger.error("propbleme lors de l'ajout du document")
+
+def es_add_document_to_buk(ip:str, jsonBulkIter):
+    try:
+        es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
+        #es.index(index_name, payload)
+        helpers.bulk(client=es,actions=jsonBulkIter)
+        #es.bulk(jsonBulk)
+
+    except elasticsearch.ElasticsearchException:
+        print("es_api: _docAdd_Bulk_Doc: il y a un probleme lors de l ajout du document")      
+        logger.error("Bulk probleme lors de l'ajout du document")
 
 # recupere le nombre de shard d un index
 def es_get_index_shard_number(ip:str):
@@ -190,15 +226,7 @@ def es_get_index_shard_number(ip:str):
         logger.error("propbleme lors de la recuperation du nombre de shard de l index: ")
     return int(result)
 
-# preparation du contexte de bulk
-def es_bulk_configuration(ip:str):
-    es_create_new_index(ip, es_get_index_name_datenow())
-
-# Calculer le nombre de document a inserer dans un bulk
-def es_bulk_number_calculator():
-    return
-
-def es_add_document_bulk():
+def bulkProcess_State(totalOfIdicesToSend:int, actualIndiceNumber:int):
     return
 
 # Recupere juste la date
@@ -211,6 +239,7 @@ def es_get_index_name_datenow():
 
 # Compte le nombre de documents de l index fourni
 def es_count_of_given_indexName(ip:str, given_IndexName:str):
+    time.sleep(5)
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         myCount = es.count(index=given_IndexName)["count"]
