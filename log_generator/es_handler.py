@@ -34,7 +34,7 @@ def es_getSrvResponse(ip:str):
 def es_getSrvVersion(ip:str): 
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
-        print("es_api: Cluster version: " + str( es.info()['version'].get("number") ) )
+        print("es_api: Cluster_version: " + str( es.info()['version'].get("number") ) )
     except elasticsearch.ConnectionError:
         print("es_api: " + ip + " ne repond pas")
         exitProgram()
@@ -173,20 +173,23 @@ def es_create_new_index(ip:str, index_name:str):
 # Ajout de document dans l index
 def es_add_document(ip:str, payload,totalOfIdicesToSend:int, actualIndiceNumber:int):
     global bulkToProcess
-    if totalOfIdicesToSend < 11:
+    j=0
+    if totalOfIdicesToSend <= 100:
+        es_operation_achievement_state(totalOfIdicesToSend, actualIndiceNumber)
         es_send_single_document(ip,payload)
     else:
         bulkToProcess.append(payload)
-        print("es_api: Json injection to array")
         if len(bulkToProcess) == totalOfIdicesToSend:
-            bulkProcess_State(totalOfIdicesToSend, actualIndiceNumber)
             es_add_document_to_buk(ip, convert_arrayToBulk(bulkToProcess))
             
 
 def convert_arrayToBulk(bulkToProcess):
     jsonBulk:str = ""
     index_name = index_name_pyloggen + get_gen_date_index()
+    i=1
     for document in bulkToProcess:
+        i = i+1
+        es_operation_achievement_state(len(bulkToProcess), i)
         yield {
             "_index" : index_name,
             "_type" : "_doc",
@@ -226,8 +229,24 @@ def es_get_index_shard_number(ip:str):
         logger.error("propbleme lors de la recuperation du nombre de shard de l index: ")
     return int(result)
 
-def bulkProcess_State(totalOfIdicesToSend:int, actualIndiceNumber:int):
-    return
+def es_operation_achievement_state(totalOfIdicesToSend:int, actualIndiceNumber:int):
+        
+    injectionArray = []
+    injection_pourcentage_achievement = calc_pourcentage_from_inial_vaule_args_num(actualIndiceNumber, totalOfIdicesToSend)
+    if totalOfIdicesToSend <= 25:
+        injectionArray = []
+    elif totalOfIdicesToSend > 25 and totalOfIdicesToSend <= 100:
+        injectionArray = [0, 25, 50, 75, 100]
+    elif totalOfIdicesToSend > 100 and totalOfIdicesToSend <= 1000:
+        injectionArray = [0, 10, 30, 50, 70, 90, 100]
+    elif totalOfIdicesToSend > 1000:
+        injectionArray = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+
+    if injection_pourcentage_achievement in injectionArray:
+        print("es_api: Injection des documents à " +  str(injection_pourcentage_achievement) + "%")
+
+def calc_pourcentage_from_inial_vaule_args_num(given_number:int, initial_number:int):
+    return given_number * 100 / initial_number
 
 # Recupere juste la date
 def get_gen_date_index():

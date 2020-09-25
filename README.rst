@@ -54,5 +54,3 @@ Open a terminal and run ``loggen``. The following options are available:
 +---------------------------+------------------------------------------+
 | ``--esapiip IPDEST``      | send logs to elastic server              |
 +---------------------------+------------------------------------------+
-| ``--bulknum NUMBER``      | send bulk x logs in one http request     |
-+---------------------------+------------------------------------------+

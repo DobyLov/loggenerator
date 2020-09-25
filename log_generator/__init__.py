@@ -119,8 +119,6 @@ def main(**kwargs):
                     help="elastic api ip address")
     parser.add_argument("--loglvl", default="ERROR", type=str,
                     help="logger level (DEBUG, INFO, WARNING, ERROR)")
-    parser.add_argument("--bulknum", metavar="NUMBER", type=int,
-                    default=1, help="number of indices to send es api bulk")
 
     # get args
     if "args" in kwargs:
@@ -140,6 +138,9 @@ def main(**kwargs):
             print("es_api: injection sans fin de documents, seul ctrl +c pour quitter.")
         else:
             print("es_api: injection de(s) " + str(args["num"]) + " log(s)")  
+        
+        if args["num"] > 100:
+            print ("es_api: Bulk_mode actif")
     
     for _ in range(args["num"]): 
         output_text, output_text_url, output_json = get_log(myIPArray, myUAArray)
@@ -167,27 +168,6 @@ def main(**kwargs):
             if args["webip"] != "":
                 web_post_document(args["webip"], output_text_url, error_log_file_path)
         
-        if args["esapiip"] != "":
-            if args["num"] > 11:
-                print ("es_api: Bulk_mode actif")
-        """
-            injectionArray = []
-            injection_pourcentage_achievement = calc_pourcentage_from_inial_vaule_args_num(_, args["num"])
-            if args["num"] <= 25:
-                injectionArray = []
-            elif args["num"] > 25 and args["num"] <= 50:
-                injectionArray = [50]
-            elif args["num"] > 50 and args["num"] <= 100:
-                injectionArray = [25, 50, 75]
-            elif args["num"] > 100 and args["num"] <= 1000:
-                injectionArray = [10, 30, 50, 70, 90]
-            elif args["num"] > 1000:
-                injectionArray = [10, 20, 30, 40, 50, 60, 70, 80, 90]           
-
-            if args["no_print"] == True:
-                if injection_pourcentage_achievement in injectionArray:
-                    print("es_api: patientez : Mise en mémoire à " +  str(injection_pourcentage_achievement) + "%")
-        """
     
     if args["infinite"] == True:
         while True:
@@ -237,10 +217,6 @@ def randomPause(pauseLevel:int):
 # Réalise une pause de x secondes
 def makePause(pauseTime):
     time.sleep(pauseTime)
-
-
-def calc_pourcentage_from_inial_vaule_args_num(given_number:int, initial_number:int):
-    return given_number * 100 / initial_number
 
 # sortir du programme
 def exitProgram():
