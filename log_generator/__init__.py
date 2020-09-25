@@ -181,7 +181,8 @@ def main(**kwargs):
             if args["webip"] != "":
                 web_post_document(args["webip"], output_text_url, error_log_file_path)
             if args["esapiip"] != "":
-                es_add_document(args["esapiip"], output_json)
+                #es_add_document(args["esapiip"], output_json)
+                es_add_document(args["esapiip"], output_json, 1, 1)
 
     # -------------------------------------------------
     # Message de fin de script

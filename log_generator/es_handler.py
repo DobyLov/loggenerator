@@ -232,18 +232,19 @@ def es_get_index_shard_number(ip:str):
 def es_operation_achievement_state(totalOfIdicesToSend:int, actualIndiceNumber:int):
         
     injectionArray = []
-    injection_pourcentage_achievement = calc_pourcentage_from_inial_vaule_args_num(actualIndiceNumber, totalOfIdicesToSend)
-    if totalOfIdicesToSend <= 25:
-        injectionArray = []
-    elif totalOfIdicesToSend > 25 and totalOfIdicesToSend <= 100:
-        injectionArray = [0, 25, 50, 75, 100]
-    elif totalOfIdicesToSend > 100 and totalOfIdicesToSend <= 1000:
-        injectionArray = [0, 10, 30, 50, 70, 90, 100]
-    elif totalOfIdicesToSend > 1000:
-        injectionArray = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    if actualIndiceNumber !=0:
+        injection_pourcentage_achievement = calc_pourcentage_from_inial_vaule_args_num(actualIndiceNumber, totalOfIdicesToSend)
+        if totalOfIdicesToSend <= 25:
+            injectionArray = []
+        elif totalOfIdicesToSend > 25 and totalOfIdicesToSend <= 100:
+            injectionArray = [0, 25, 50, 75, 100]
+        elif totalOfIdicesToSend > 100 and totalOfIdicesToSend <= 1000:
+            injectionArray = [0, 10, 30, 50, 70, 90, 100]
+        elif totalOfIdicesToSend > 1000:
+            injectionArray = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 
-    if injection_pourcentage_achievement in injectionArray:
-        print("es_api: Injection des documents à " +  str(injection_pourcentage_achievement) + "%")
+        if injection_pourcentage_achievement in injectionArray:
+            print("es_api: Injection des documents à " +  str(injection_pourcentage_achievement) + "%")
 
 def calc_pourcentage_from_inial_vaule_args_num(given_number:int, initial_number:int):
     return given_number * 100 / initial_number
