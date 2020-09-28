@@ -137,7 +137,6 @@ def es_create_new_template(ip:str):
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         es.indices.put_template(index_template_name, index_template_settings)
-        #es_waitSrvReady(ip)
         if es.indices.exists_template(index_template_name):
             print("es_api: Template cree => " + index_template_name)
 
@@ -157,23 +156,39 @@ def es_check_existing_index(ip:str):
 
 
 # Ajouter un index
-def es_create_new_index(ip:str, index_name:str):
+def es_create_new_index(ip:str):
+    index_name = es_get_index_name_datenow()
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
         es.index(index_name,{"userAgent":"none","ip_address":'1.1.1.1'})
+        #es.index(index_name)
         if es.indices.exists(index_name):
             print("es_api: Index => " + index_name + " cree")
         else:
             print("es_api: Index non cree " + index_name)
+        
+        es_add_alias(ip,index_name)
 
     except elasticsearch.ElasticsearchException:
         print("es_api: probleme a la creationde l index")
         exitProgram()
 
+def es_add_alias(ip:str,index_name:str):
+    try:
+        es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
+        existAlias = es.indices.exists_alias("pyloggen")
+        if existAlias == False:
+            es.indices.put_alias(index_name,"pyloggen")
+            print("es_alias créé : " + str(es.cat.aliases("pyloggen")))
+
+    except elasticsearch.ElasticsearchException:
+        print("es_api: probleme a la creation de l'alias")
+        exitProgram()
+
 # Ajout de document dans l index
 def es_add_document(ip:str, payload,totalOfIdicesToSend:int, actualIndiceNumber:int):
     global bulkToProcess
-    j=0
+    #j=0
     if totalOfIdicesToSend <= 100:
         es_operation_achievement_state(totalOfIdicesToSend, actualIndiceNumber)
         es_send_single_document(ip,payload)
@@ -188,7 +203,7 @@ def convert_arrayToBulk(bulkToProcess):
     index_name = index_name_pyloggen + get_gen_date_index()
     i=1
     for document in bulkToProcess:
-        i = i+1
+        i += 1
         es_operation_achievement_state(len(bulkToProcess), i)
         yield {
             "_index" : index_name,
