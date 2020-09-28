@@ -6,7 +6,7 @@ index_template = {
     "number_of_shards": 1,
     "number_of_replicas": 0,
     "index.lifecycle.name": "ilm_loggen", 
-    "index.lifecycle.rollover_alias": "loggen-alias"
+    "index.lifecycle.rollover_alias": "loggen_rollov"
   }
 }
 
@@ -14,7 +14,7 @@ test_index_template = {
   "index_patterns": ["loggen-*"], 
   "settings": {
     "index.lifecycle.name": "ilm_loggen", 
-    "index.lifecycle.rollover_alias": "loggen-alias"
+    "index.lifecycle.rollover_alias": "loggen_rollov"
   }
 }
 
@@ -24,13 +24,33 @@ settings = {
       "index" : {
         "number_of_shards" : "1",
         "number_of_replicas" : "0",
-        "write" : {
-          "wait_for_active_shards" : "1"
-        }
       }
   }
 }
 
+es_ilm_settings = {
+  "policy": {
+    "phases": {
+      "hot": {
+        "actions": {
+          "rollover": {
+            "max_age": "5d",
+            "max_size": "1gb"
+          },
+          "set_priority": {
+            "priority": 100
+          }
+        }
+      },
+      "delete": {
+        "min_age": "5d",
+        "actions": {
+          "delete": {}
+        }
+      }
+    }
+  }
+}
 
 # es_mapping
 mapping = {
