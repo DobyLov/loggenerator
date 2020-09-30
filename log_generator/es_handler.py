@@ -13,6 +13,7 @@ import elasticsearch, requests, json, logging
 from elasticsearch import helpers
 import time
 import re
+import numpy as np 
 from datetime import datetime
 
 
@@ -207,8 +208,28 @@ def es_add_document(ip:str, payload,totalOfIdicesToSend:int, actualIndiceNumber:
     else:
         bulkToProcess.append(payload)
         if len(bulkToProcess) == totalOfIdicesToSend:
+            display_array_ram_size(bulkToProcess)
             es_add_document_to_buk(ip, convert_arrayToBulk(bulkToProcess))
             
+def display_array_ram_size(bulkToProcess):
+    bulkSize = np.array(bulkToProcess).nbytes
+    B = float(bulkSize)
+    KB = float(1024)
+    MB = float(KB ** 2) # 1,048,576
+    GB = float(KB ** 3) # 1,073,741,824
+    TB = float(KB ** 4) # 1,099,511,627,776
+    if bulkSize < KB:
+        result = '{0} {1}'.format(bulkSize,'Bytes' if 0 == bulkSize > 1 else 'Byte')
+    elif KB <= bulkSize < MB:
+        result = '{0:.2f} KB'.format(bulkSize/KB)
+    elif MB <= bulkSize < GB:
+        result = '{0:.2f} MB'.format(B/MB)
+    elif GB <= bulkSize < TB:
+        result = '{0:.2f} GB'.format(bulkSize/GB)
+    elif TB <= bulkSize:
+        result = '{0:.2f} TB'.format(bulkSize/TB)
+    print("es_api: les " + str(len(bulkToProcess))  + " logs pesent : " + str(result))
+
 
 def convert_arrayToBulk(bulkToProcess):
     jsonBulk:str = ""
