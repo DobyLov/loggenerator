@@ -137,13 +137,14 @@ def main(**kwargs):
     if args["esapiip"] != "":
         chrono_end_inject_docs = get_dateNow()  
         if args["infinite"] == True:
-            print("es_api: injection sans fin de documents, seul ctrl +c pour quitter.")
+            print("es_api: Injection sans fin de documents, seul ctrl +c pour quitter.")
         else:
-            print("es_api: injection de(s) " + str(args["num"]) + " log(s)")  
+            print("es_api: Injection de(s) " + str(args["num"]) + " log(s)")  
         
         if args["num"] > 100:
             print ("es_api: Bulk_mode actif")
-    
+            print ("es_api: Génération en Ram des " + str(args["num"]) + " documents")
+            
     for _ in range(args["num"]): 
         output_text, output_text_url, output_json = get_log(myIPArray, myUAArray)
         if (args == "" or args["num"] == 1) and args["infinite"] == False:
@@ -189,7 +190,7 @@ def main(**kwargs):
     # -------------------------------------------------
     # Message de fin de script
     if args["esapiip"] != "":
-        print("es_api: temps total d'injection du/des " + str(args["num"]) + " doc(s) => " + str( calculat_elapsed_time(get_dateNow(), chrono_end_inject_docs)) )
+        print("es_api: Temps total d'injection du/des " + str(args["num"]) + " doc(s) => " + str( calculat_elapsed_time(get_dateNow(), chrono_end_inject_docs)) )
         #print("es_api: index : " + es_get_index_name_datenow() + " count = " + str( es_count_of_given_indexName(args["esapiip"], es_get_index_name_datenow()) ) )
 
 

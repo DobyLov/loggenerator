@@ -145,7 +145,7 @@ def es_create_new_template(ip:str):
 
     except elasticsearch.ElasticsearchException:            
         #print("es_Api: " + ip + " status code : " + str(res.status_code))
-        print("es_api: il y eu un roblème a la creation du template")
+        print("es_api: Il y eu un roblème a la creation du template")
         exitProgram()
 
 def es_check_ilm_policy_exist(ip:str):
@@ -157,17 +157,17 @@ def es_check_ilm_policy_exist(ip:str):
             es_add_ilm_policy(ip)
     
     except elasticsearch.ConnectionError:
-        print("es_api: ilm impossible savoir si la regle existe")
+        print("es_api: Ilm impossible savoir si la regle existe")
         exitProgram()
 
 def es_add_ilm_policy(ip:str):
     es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
     try:      
         roll = es.ilm.put_lifecycle("pyloggen_rollov",es_ilm_settings)
-        print("es_api: ilm : regle pyloggen_rollov ajoutée")
+        print("es_api: Ilm : Regle pyloggen_rollov ajoutée")
         
     except elasticsearch.ConnectionError:
-        print("es_api: ilm impossible d'ajouter la regle")
+        print("es_api: Ilm impossible d'ajouter la regle")
         exitProgram()
 
 # Ajouter un index
@@ -175,27 +175,33 @@ def es_create_new_index(ip:str):
     index_name = es_get_index_name_datenow()
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
-        es.index(index_name,{"userAgent":"none","ip_address":'1.1.1.1'})
         if es.indices.exists(index_name):
-            print("es_api: Index => " + index_name + " cree")
+            print("es_api: Index => " + index_name + " présent")
         else:
-            print("es_api: Index non cree " + index_name)
-        es_add_alias(ip,index_name)
+            es.indices.create(index_name)
+            es_add_alias(ip,index_name)
+            print("es_api: Index => " + index_name + " créé")
 
     except elasticsearch.ElasticsearchException:
-        print("es_api: probleme a la creationde l index")
+        print("es_api: Probleme à la créationde l'index")
         exitProgram()
 
 def es_add_alias(ip:str,index_name:str):
     try:
         es = elasticsearch.Elasticsearch([{'host': ip,'port': 9200 }])
-        existAlias = es.indices.exists_alias("pyloggen")
-        if existAlias == False:
-            es.indices.put_alias(index_name,"pyloggen")
-            print("es_alias créé : " + str(es.cat.aliases("pyloggen")))
-
+        es.indices.put_alias(index_name,"pyloggen")
+        aliasList = es.cat.aliases("pyloggen")
+        aliasListArray = aliasList.splitlines()
+        stringOfALiases = ""
+        for alias in aliasListArray:
+            if stringOfALiases == "":
+                stringOfALiases = stringOfALiases + alias
+            else:
+                stringOfALiases = stringOfALiases + ", " + alias
+        print("es_api: Alias créé")
+        print("es_api: Aiste des alias: " + stringOfALiases)
     except elasticsearch.ElasticsearchException:
-        print("es_api: probleme a la creation de l'alias")
+        print("es_api: Probleme à la création de l'alias")
         exitProgram()
 
 # Ajout de document dans l index
@@ -228,8 +234,8 @@ def display_array_ram_size(bulkToProcess):
         result = '{0:.2f} GB'.format(bulkSize/GB)
     elif TB <= bulkSize:
         result = '{0:.2f} TB'.format(bulkSize/TB)
-    print("es_api: les " + str(len(bulkToProcess))  + " logs pesent : " + str(result))
-
+    print("es_api: Mémoire occupée par des " + str(len(bulkToProcess))  + " logs générés : " + str(result))
+    print("es_api: Injection en cours ...")
 
 def convert_arrayToBulk(bulkToProcess):
     jsonBulk:str = ""
@@ -251,8 +257,8 @@ def es_send_single_document(ip:str, payload):
         es.index(index_name, payload)
         logger.info("Document ajouté")
     except elasticsearch.ElasticsearchException:
-        print("es_api: _docAdd_Single_doc: il y a un probleme lors de l ajout du document")      
-        logger.error("propbleme lors de l'ajout du document")
+        print("es_api: _docAdd_Single_doc: il y à un probleme lors de l'ajout du document")      
+        logger.error("es_api: Problème lors de l'ajout du document")
 
 def es_add_document_to_buk(ip:str, jsonBulkIter):
     try:
@@ -263,7 +269,7 @@ def es_add_document_to_buk(ip:str, jsonBulkIter):
 
     except elasticsearch.ElasticsearchException:
         print("es_api: _docAdd_Bulk_Doc: il y a un probleme lors de l ajout du document")      
-        logger.error("Bulk probleme lors de l'ajout du document")
+        logger.error("es_api: Bulk probleme lors de l'ajout du document")
 
 # recupere le nombre de shard d un index
 def es_get_index_shard_number(ip:str):
@@ -274,7 +280,7 @@ def es_get_index_shard_number(ip:str):
 
     except elasticsearch.ElasticsearchException:
         print("es_api: _get_index_shard_number: nombre de shard non recupere")      
-        logger.error("propbleme lors de la recuperation du nombre de shard de l index: ")
+        logger.error("es_api: problème lors de la recuperation du nombre de shard de l index: ")
     return int(result)
 
 def es_operation_achievement_state(totalOfIdicesToSend:int, actualIndiceNumber:int):
@@ -286,9 +292,9 @@ def es_operation_achievement_state(totalOfIdicesToSend:int, actualIndiceNumber:i
             injectionArray = []
         elif totalOfIdicesToSend > 25 and totalOfIdicesToSend <= 100:
             injectionArray = [0, 25, 50, 75, 100]
-        elif totalOfIdicesToSend > 100 and totalOfIdicesToSend <= 1000:
+        elif totalOfIdicesToSend > 101 and totalOfIdicesToSend <= 1000:
             injectionArray = [0, 10, 30, 50, 70, 90, 100]
-        elif totalOfIdicesToSend > 1000:
+        elif totalOfIdicesToSend > 1001:
             injectionArray = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 
         if injection_pourcentage_achievement in injectionArray:
@@ -314,4 +320,4 @@ def es_count_of_given_indexName(ip:str, given_IndexName:str):
         return myCount
 
     except elasticsearch.ElasticsearchException:
-        print("es_api: _countDoc il y a un probleme lors du count de l'index " + given_IndexName) 
+        print("es_api: _countDoc il y à un problème lors du count de l'index " + given_IndexName) 
