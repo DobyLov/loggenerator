@@ -38,21 +38,23 @@ Open a terminal and run ``loggen``. The following options are available:
 +---------------------------+------------------------------------------+
 | Command line argument     | Description                              |
 +===========================+==========================================+
-| ``-h``, ``--help``        | Show this help message and exit          |
+| ``-h``, ``--help``        | show this help message and exit          |
 +---------------------------+------------------------------------------+
-| ``--num NUMBER``          | Change number of usernames generated     |
+| ``--num NUMBER``          | change number of usernames generated     |
 +---------------------------+------------------------------------------+
 | ``--speed_gen NUMBER``    | genlog rate: 1 slow, 2 middle, 3 high    |
 +---------------------------+------------------------------------------+
 | ``--fname FILE NAME``     | Save output in a text file               |
 +---------------------------+------------------------------------------+
-| ``--infinite``            | generate log to infinite (until escape)  |
+| ``--infinite``            | generate logs to infinite (until escape) |
 +---------------------------+------------------------------------------+
-| ``--webip`` ipdestination | Send Log to specified host               |
+| ``--webip`` ipdestination | send Logs to specified host              |
 +---------------------------+------------------------------------------+
 | ``--no_pause`` no pause   | no pause between two logs                |
 +---------------------------+------------------------------------------+
 | ``--esapiip IPDEST``      | send logs to elastic server              |
++---------------------------+------------------------------------------+
+| ``--kfkip IP --topic ``   | send logs to kafka broker,specify topic  |
 +---------------------------+------------------------------------------+
 ```
 
