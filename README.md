@@ -52,9 +52,11 @@ Open a terminal and run ``loggen``. The following options are available:
 +---------------------------+------------------------------------------+
 | ``--no_pause`` no pause   | no pause between two logs                |
 +---------------------------+------------------------------------------+
-| ``--esapiip IPDEST``      | send logs to elastic server              |
+| ``--esapiip IP``          | send logs to elastic server              |
 +---------------------------+------------------------------------------+
-| ``--kfkip IP --topic ``   | send logs to kafka broker,specify topic  |
+| ``--kfkip IP``            | send logs to kafka broker                |
++---------------------------+------------------------------------------+
+| ``--kfktopic``            | specify kafka topic destination          |
 +---------------------------+------------------------------------------+
 ```
 
