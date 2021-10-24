@@ -22,6 +22,7 @@ from log_generator.ua_handler import map_ua_csv2array
 from log_generator.es_handler import es_add_document, es_get_index_shard_number, es_create_new_index, es_check_ilm_policy_exist
 from log_generator.webSrv_handler import web_post_document
 from log_generator.logger_handler import logger_configurator, logLevel_Converter, check_exist_log_level, create_file_log_level, get_logLevel_from_file
+from log_generator.kf_handler import kf_produce_msg
 from random import choice as randchoice
 import random, time, uuid, shutil, logging
 
@@ -119,6 +120,10 @@ def main(**kwargs):
                         help="prevent pause printing logs to terminal")
     parser.add_argument("--esapiip", default="", type=str,
                     help="elastic api ip address")
+    parser.add_argument("--kfkip", default="", type=str,
+                    help="kafka broker ip")
+    parser.add_argument("--kfktopic", default="", type=str,
+                    help="specify a kafka topic")                    
     parser.add_argument("--loglvl", default="ERROR", type=str,
                     help="logger level (DEBUG, INFO, WARNING, ERROR)")
 
@@ -133,7 +138,7 @@ def main(**kwargs):
         print("Error: " + str(error))
         exit(1)
 
-    # MEssage d inforamtion du script partie ES
+    # MEssage d information du script
     if args["esapiip"] != "":
         chrono_end_inject_docs = get_dateNow()  
         if args["infinite"] == True:
@@ -144,6 +149,13 @@ def main(**kwargs):
         if args["num"] > 100:
             print ("es_api: Bulk_mode actif")
             print ("es_api: Génération en Ram des " + str(args["num"]) + " documents")
+    
+    if args["kfkip"] != "":
+        chrono_end_inject_docs = get_dateNow()  
+        if args["infinite"] == True:
+            print("kfk_producer: Injection sans fin de documents, seul ctrl +c pour quitter.")
+        else:
+            print("kfk_producer: Injection de(s) " + str(args["num"]) + " log(s)") 
             
     for _ in range(args["num"]): 
         output_text, output_text_url, output_json = get_log(myIPArray, myUAArray)
@@ -158,6 +170,8 @@ def main(**kwargs):
                 es_add_document(args["esapiip"], output_json)
             if args["webip"] != "":
                 web_post_document(args["webip"], output_text_url, error_log_file_path)
+            if args["kfkip"] !="":
+                kf_produce_msg(args["kfkip"], args["kfktopic"], output_json)
 
         elif args["num"] > 1:
             if not args["no_pause"]:
@@ -170,7 +184,8 @@ def main(**kwargs):
                 es_add_document(args["esapiip"], output_json, int(args["num"]), _)
             if args["webip"] != "":
                 web_post_document(args["webip"], output_text_url, error_log_file_path)
-        
+            if args["kfkip"] !="":
+                kf_produce_msg(args["kfkip"], args["kfktopic"], output_json)
     
     if args["infinite"] == True:
         while True:
@@ -186,6 +201,8 @@ def main(**kwargs):
             if args["esapiip"] != "":
                 #es_add_document(args["esapiip"], output_json)
                 es_add_document(args["esapiip"], output_json, 1, 1)
+            if args["kfkip"] !="":
+                kf_produce_msg(args["kfkip"], args["kfktopic"], output_json)
 
     # -------------------------------------------------
     # Message de fin de script
