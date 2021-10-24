@@ -62,6 +62,8 @@ Open a terminal and run ``loggen``. The following options are available:
 
 ## Log example
 
+loggen --num 100 --esapiip 192.168.1.150 --no_pause
+
 `Log style`
 
 ```
